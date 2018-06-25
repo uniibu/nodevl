@@ -1,6 +1,6 @@
 {
   "name": "nodevl",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "simple nodejs app reloader for development",
   "bin": {
     "nodevl": "./bin/nodevl"
