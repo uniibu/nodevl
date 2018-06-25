@@ -1,0 +1,38 @@
+#!/usr/bin/env node
+
+const { fork } = require('child_process');
+const chokidar = require('chokidar');
+const path = require('path');
+const argv = require('minimist')(process.argv.slice(2));
+
+const parseEnv = function(str){
+  const env = process.env;
+  if(!str) return env;
+  str = str.split(',');
+  for(const e of str){
+    const [k,v] = e.split('=');
+    env[k] = v
+  }
+  return env;
+}
+
+const env = parseEnv(argv.env)
+const jsFile = path.resolve(process.cwd(), argv._[0]);
+let subprocess = null;
+const forkit = () => {
+  console.log('[nodevl] Running', jsFile);
+  if (subprocess) {
+    subprocess.kill();
+  }
+  subprocess = fork(jsFile,{env:env});
+};
+
+const watcher = chokidar.watch(process.cwd());
+watcher.on('ready', () => {
+  watcher.on('all', () => {
+    console.log('[nodevl] Restarting...');
+    forkit(jsFile);
+  });
+  console.log(`Node version: ${process.version}`)
+  forkit(jsFile);
+});
