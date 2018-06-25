@@ -14,3 +14,6 @@ This will reload the app when any of the files are changed, edited, deleted or s
 
 #### Environment Variables
 - You can pass extra environment variables by using `--env` option. eg. `nodevl your.js --env=PORT=8080,DEBUG=*`
+
+#### Ignoring Directories/Files
+- By default, this module ignores the `node_modules` folder in addition, you can also pass `--ignored` option to add ignored directories/folders/file. eg. `nodevl your.js --ignored=dist/test,test,build` this will ignore `dist/test`, `test`, and `build` folders

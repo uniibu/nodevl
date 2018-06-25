@@ -5,34 +5,48 @@ const chokidar = require('chokidar');
 const path = require('path');
 const argv = require('minimist')(process.argv.slice(2));
 
-const parseEnv = function(str){
+const parseEnv = str => {
   const env = process.env;
-  if(!str) return env;
+  if (!str) return env;
   str = str.split(',');
-  for(const e of str){
-    const [k,v] = e.split('=');
-    env[k] = v
+  for (const e of str) {
+    const [k, v] = e.split('=');
+    env[k] = v;
   }
   return env;
-}
-
-const env = parseEnv(argv.env)
+};
+const parseIgnored = (nodeModules, extraIgnored) => {
+  const ignored = [nodeModules];
+  if (!extraIgnored) {
+    return ignored;
+  }
+  extraIgnored = extraIgnored.split(',');
+  for (const i of extraIgnored) {
+    ignored.push(path.resolve(process.cwd(), i));
+  }
+  return ignored;
+};
+const env = parseEnv(argv.env);
 const jsFile = path.resolve(process.cwd(), argv._[0]);
+const nodeModules = path.resolve(process.cwd(), 'node_modules');
+const ignored = parseIgnored(nodeModules, argv.ignored);
 let subprocess = null;
 const forkit = () => {
   console.log('[nodevl] Running', jsFile);
   if (subprocess) {
     subprocess.kill();
   }
-  subprocess = fork(jsFile,{env:env});
+  subprocess = fork(jsFile, { env });
 };
 
-const watcher = chokidar.watch(process.cwd());
+const watcher = chokidar.watch(process.cwd(), {
+  ignored
+});
 watcher.on('ready', () => {
   watcher.on('all', () => {
     console.log('[nodevl] Restarting...');
     forkit(jsFile);
   });
-  console.log(`Node version: ${process.version}`)
+  console.log(`Node version: ${process.version}`);
   forkit(jsFile);
 });
