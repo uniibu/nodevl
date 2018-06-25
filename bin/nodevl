@@ -2,6 +2,7 @@
 
 const { fork } = require('child_process');
 const chokidar = require('chokidar');
+const debug = require('debug')('nodevl');
 const path = require('path');
 const argv = require('minimist')(process.argv.slice(2));
 
@@ -32,7 +33,7 @@ const nodeModules = path.resolve(process.cwd(), 'node_modules');
 const ignored = parseIgnored(nodeModules, argv.ignored);
 let subprocess = null;
 const forkit = () => {
-  console.log('[nodevl] Running', jsFile);
+  debug('Running', jsFile);
   if (subprocess) {
     subprocess.kill();
   }
@@ -43,10 +44,12 @@ const watcher = chokidar.watch(process.cwd(), {
   ignored
 });
 watcher.on('ready', () => {
-  watcher.on('all', () => {
-    console.log('[nodevl] Restarting...');
+  watcher.on('all', (event, path) => {
+    debug('event', event);
+    debug('path', path);
+    debug('Restarting...');
     forkit(jsFile);
   });
-  console.log(`Node version: ${process.version}`);
+  debug(`Node version: ${process.version}`);
   forkit(jsFile);
 });
